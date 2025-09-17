@@ -93,6 +93,7 @@ class FineOnlyEntryCaseInformation:
         """Add a new charge to the case"""
         self.charges_list.append(charge)
 
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for template rendering - JSON serializable"""
         # Convert charges_list to list of dictionaries
@@ -109,7 +110,7 @@ class FineOnlyEntryCaseInformation:
             'defense_counsel_name': self.defense_counsel_name,
             'defense_counsel_type': self.defense_counsel_type,
             'defense_counsel_waived': self.defense_counsel_waived,
-            'charges_list': charges_dict_list,  # Now a list of dictionaries
+            'charges_list': charges_dict_list,
             'court_costs': self.court_costs,
             'ability_to_pay': self.ability_to_pay,
             'balance_due_date': self.balance_due_date,
@@ -120,6 +121,6 @@ class FineOnlyEntryCaseInformation:
             'total_fines': self.get_total_fines(),
             'total_suspended': self.get_total_suspended(),
             'net_amount': self.get_total_fines() - self.get_total_suspended(),
-            'conditions': asdict(self.conditions),  # Convert to dictionary
-            'fra_info': asdict(self.fra_info),  # Convert to dictionary
+            'conditions': asdict(self.conditions),
+            'fra_info': asdict(self.fra_info),
         }
