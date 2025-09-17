@@ -3,11 +3,11 @@ Django==4.2.16
 python-dotenv==1.0.0
 
 # Database drivers
-pyodbc==5.0.1  # For SQL Server (Civica systems)
-psycopg2-binary==2.9.7  # Alternative PostgreSQL driver if needed
+pyodbc==5.0.1
+psycopg2-binary==2.9.7
 
-# Document generation
-aspose-words==23.11.0  # Evaluation version
+# Document generation - CHANGED
+python-docx-template==0.16.7
 
 # Development tools
 django-debug-toolbar==4.2.0

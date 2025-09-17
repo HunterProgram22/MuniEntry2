@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any
 
 
@@ -94,7 +94,10 @@ class FineOnlyEntryCaseInformation:
         self.charges_list.append(charge)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for template rendering"""
+        """Convert to dictionary for template rendering - JSON serializable"""
+        # Convert charges_list to list of dictionaries
+        charges_dict_list = [asdict(charge) for charge in self.charges_list]
+
         return {
             'case_number': self.case_number,
             'defendant_first_name': self.defendant_first_name,
@@ -106,7 +109,7 @@ class FineOnlyEntryCaseInformation:
             'defense_counsel_name': self.defense_counsel_name,
             'defense_counsel_type': self.defense_counsel_type,
             'defense_counsel_waived': self.defense_counsel_waived,
-            'charges_list': self.charges_list,
+            'charges_list': charges_dict_list,  # Now a list of dictionaries
             'court_costs': self.court_costs,
             'ability_to_pay': self.ability_to_pay,
             'balance_due_date': self.balance_due_date,
@@ -116,7 +119,7 @@ class FineOnlyEntryCaseInformation:
             'jail_time_credit': self.jail_time_credit,
             'total_fines': self.get_total_fines(),
             'total_suspended': self.get_total_suspended(),
-            'net_fines': self.get_total_fines() - self.get_total_suspended(),
-            'conditions': self.conditions,
-            'fra_info': self.fra_info,
+            'net_amount': self.get_total_fines() - self.get_total_suspended(),
+            'conditions': asdict(self.conditions),  # Convert to dictionary
+            'fra_info': asdict(self.fra_info),  # Convert to dictionary
         }

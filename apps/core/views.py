@@ -1,9 +1,11 @@
 import json
+import os
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from apps.cases.models import FineOnlyEntryCaseInformation, Charge, FineOnlyConditions, FRAInfo
+from apps.documents.generators import FineOnlyDocumentGenerator
 
 
 def select_user(request):
@@ -170,14 +172,45 @@ def handle_fine_only_plea(request, context):
             'success_message'] = f"Fine Only Plea entry created for case {case_info.case_number}"
         context['case_data'] = case_info.to_dict()
 
-        return render(request, 'entries/fine_only_success.html', context)
+        # return render(request, 'entries/fine_only_success.html', context)
+        try:
+            generator = FineOnlyDocumentGenerator()
+            output_path, filename = generator.generate_document(case_info.to_dict())
 
+            context[
+                'success_message'] = f"Fine Only Plea entry created for case {case_info.case_number}"
+            context['case_data'] = case_info.to_dict()
+            context['document_generated'] = True
+            context['document_filename'] = filename
+            context['document_path'] = output_path
+
+        except Exception as e:
+            context['error_message'] = f"Entry created but document generation failed: {str(e)}"
+            context['case_data'] = case_info.to_dict()
+            context['document_generated'] = False
+
+        return render(request, 'entries/fine_only_success.html', context)
     # GET request - show the form
     # Initialize with one empty charge
     initial_charges = [Charge()]
     context['initial_charges'] = initial_charges
 
     return render(request, 'entries/fine_only_form_complex.html', context)
+
+
+def download_document(request, filename):
+    """Serve generated documents for download"""
+    file_path = os.path.join(settings.MEDIA_ROOT, 'generated', filename)
+
+    if os.path.exists(file_path):
+        response = FileResponse(
+            open(file_path, 'rb'),
+            as_attachment=True,
+            filename=filename
+        )
+        return response
+    else:
+        raise Http404("Document not found")
 
 
 @csrf_exempt
