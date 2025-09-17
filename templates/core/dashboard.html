@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - MuniEntry{% endblock %}
+
+{% block content %}
+<!-- User Info Header -->
+<div class="user-info text-center">
+    <h3>Welcome, {{ selected_user }}</h3>
+    <p class="mb-0">Select an entry type below to create court documents</p>
+</div>
+
+<!-- Case Search Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Case Search</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Criminal/Traffic Case Search</h6>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Enter case number" id="crim-case-search">
+                            <button class="btn btn-outline-secondary" type="button">Get Case</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Civil Case Search</h6>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Enter case number" id="civil-case-search">
+                            <button class="btn btn-outline-secondary" type="button">Get Case</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Entry Categories -->
+<div class="row">
+    {% for category in entry_categories %}
+    <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card h-100 entry-card">
+            <div class="card-header bg-{{ category.color }} text-white">
+                <h5 class="card-title mb-0">{{ category.name }} Entries</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for entry in category.entries %}
+                    <button type="button" class="list-group-item list-group-item-action"
+                            onclick="createEntry('{{ entry }}', '{{ category.name }}')">
+                        {{ entry }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Daily Case Lists Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Daily Case Lists</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="case-list" id="arraignments" value="arraignments">
+                            <label class="form-check-label" for="arraignments">Arraignments</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="case-list" id="slated" value="slated">
+                            <label class="form-check-label" for="slated">Slated</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="case-list" id="final-pretrial" value="final-pretrial">
+                            <label class="form-check-label" for="final-pretrial">Final Pre-trials</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="case-list" id="pleas" value="pleas">
+                            <label class="form-check-label" for="pleas">Pleas and Motion Hearings</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="case-list" id="trials" value="trials">
+                            <label class="form-check-label" for="trials">Trials to Court and Jury Trials</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <select class="form-select" id="daily-case-list" disabled>
+                        <option>Select a case list type first</option>
+                    </select>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-secondary" disabled>Show Docket for Selected Case</button>
+                    <button class="btn btn-secondary">Reload Daily Case Lists</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function createEntry(entryType, category) {
+    // This will be implemented later to open entry forms
+    alert(`Creating ${entryType} entry in ${category} category`);
+    // Future: window.location.href = `/entries/${category}/${entryType}/`;
+}
+
+// Case list radio button handling
+document.querySelectorAll('input[name="case-list"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const caseListSelect = document.getElementById('daily-case-list');
+        caseListSelect.disabled = false;
+        caseListSelect.innerHTML = `<option>Loading ${this.value} cases...</option>`;
+        // Future: Load actual case data via AJAX
+    });
+});
+</script>
+{% endblock %}
