@@ -119,9 +119,9 @@
 {% block scripts %}
 <script>
 function createEntry(entryType, category) {
-    // This will be implemented later to open entry forms
-    alert(`Creating ${entryType} entry in ${category} category`);
-    // Future: window.location.href = `/entries/${category}/${entryType}/`;
+    // Navigate to the entry form
+    const url = `/entry/${encodeURIComponent(category)}/${encodeURIComponent(entryType)}/`;
+    window.location.href = url;
 }
 
 // Case list radio button handling

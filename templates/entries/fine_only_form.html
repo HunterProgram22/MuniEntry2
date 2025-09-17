@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Fine Only Plea - {{ case_number|default:"New Entry" }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Fine Only Plea Entry</h4>
+                <small>Creating entry as: {{ selected_user }}</small>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Case Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="case_number" class="form-label"><strong>Case Number*</strong></label>
+                            <input type="text" class="form-control" id="case_number" name="case_number" required
+                                   placeholder="21CRB1234">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="plea_trial_date" class="form-label"><strong>Plea/Trial Date</strong></label>
+                            <input type="date" class="form-control" id="plea_trial_date" name="plea_trial_date">
+                        </div>
+                    </div>
+
+                    <!-- Defendant Information -->
+                    <h6 class="border-bottom pb-2 mb-3">Defendant Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="defendant_first_name" class="form-label"><strong>First Name*</strong></label>
+                            <input type="text" class="form-control" id="defendant_first_name" name="defendant_first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="defendant_last_name" class="form-label"><strong>Last Name*</strong></label>
+                            <input type="text" class="form-control" id="defendant_last_name" name="defendant_last_name" required>
+                        </div>
+                    </div>
+
+                    <!-- Charges -->
+                    <div class="mb-3">
+                        <label for="charges" class="form-label"><strong>Charges*</strong></label>
+                        <textarea class="form-control" id="charges" name="charges" rows="3" required
+                                  placeholder="Enter charges separated by commas"></textarea>
+                    </div>
+
+                    <!-- Financial Information -->
+                    <h6 class="border-bottom pb-2 mb-3">Financial Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="fine_amount" class="form-label"><strong>Fine Amount*</strong></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="fine_amount" name="fine_amount" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="costs" class="form-label"><strong>Court Costs</strong></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="costs" name="costs" value="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="suspended_amount" class="form-label">Suspended Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="suspended_amount" name="suspended_amount" value="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-lg me-2">Create Entry</button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case Information Sidebar -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Case Search</h6>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="case-lookup" placeholder="Enter case number">
+                    <button class="btn btn-outline-secondary" type="button" onclick="lookupCase()">Search</button>
+                </div>
+                <div id="case-info" class="small text-muted">
+                    Enter a case number to populate defendant and charge information
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Entry Information</h6>
+            </div>
+            <div class="card-body small">
+                <p><strong>Entry Type:</strong> Fine Only Plea</p>
+                <p><strong>Category:</strong> Criminal/Traffic</p>
+                <p><strong>Creates:</strong> Word document judgment entry</p>
+                <p class="mb-0"><strong>Note:</strong> This entry type is for plea agreements with fine-only sentences (no jail time or community control).</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function lookupCase() {
+    const caseNumber = document.getElementById('case-lookup').value;
+    if (!caseNumber) return;
+
+    // Placeholder for case lookup - will implement with AJAX later
+    document.getElementById('case-info').innerHTML =
+        `<div class="text-info">Case lookup will be implemented next...</div>`;
+}
+
+// Auto-populate form from case lookup
+document.getElementById('case-lookup').addEventListener('change', function() {
+    document.getElementById('case_number').value = this.value;
+});
+</script>
+{% endblock %}

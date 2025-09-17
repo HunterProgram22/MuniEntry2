@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Entry Created Successfully{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="alert alert-success">
+            <h4 class="alert-heading">Entry Created Successfully!</h4>
+            <p>{{ success_message }}</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Entry Details</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Case Number:</dt>
+                    <dd class="col-sm-9">{{ case_data.case_number }}</dd>
+
+                    <dt class="col-sm-3">Defendant:</dt>
+                    <dd class="col-sm-9">{{ case_data.defendant_first_name }} {{ case_data.defendant_last_name }}</dd>
+
+                    <dt class="col-sm-3">Judicial Officer:</dt>
+                    <dd class="col-sm-9">{{ case_data.judicial_officer }}</dd>
+
+                    <dt class="col-sm-3">Fine Amount:</dt>
+                    <dd class="col-sm-9">${{ case_data.fine_amount }}</dd>
+
+                    <dt class="col-sm-3">Charges:</dt>
+                    <dd class="col-sm-9">{{ case_data.charges }}</dd>
+                </dl>
+
+                <div class="mt-3">
+                    <button class="btn btn-primary me-2" onclick="alert('Document generation coming next!')">
+                        Generate Document
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+                    <a href="{% url 'create_entry' category=category entry_type=entry_type %}" class="btn btn-outline-primary">Create Another</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

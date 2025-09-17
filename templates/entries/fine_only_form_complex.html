@@ -1,0 +1,540 @@
+{% extends 'base.html' %}
+
+{% block title %}Fine Only Plea Entry - {{ case_number|default:"New Entry" }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <form method="post" id="fine-only-form">
+        {% csrf_token %}
+
+        <!-- Header Section -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-0">Fine Only Plea Entry</h4>
+                                <small>Creating entry as: {{ selected_user }}</small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-light btn-sm" onclick="clearFields()">Clear Fields</button>
+                                <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Case Information Section -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Case Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="defendant_first_name" class="form-label"><strong>Def. First Name*</strong></label>
+                                <input type="text" class="form-control" id="defendant_first_name" name="defendant_first_name" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="defendant_last_name" class="form-label"><strong>Def. Last Name*</strong></label>
+                                <input type="text" class="form-control" id="defendant_last_name" name="defendant_last_name" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="case_number" class="form-label"><strong>Case Number*</strong></label>
+                                <input type="text" class="form-control" id="case_number" name="case_number" required placeholder="21CRB1234">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="plea_trial_date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="plea_trial_date" name="plea_trial_date">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label for="defense_counsel_name" class="form-label">Def. Counsel</label>
+                                <input type="text" class="form-control" id="defense_counsel_name" name="defense_counsel_name"
+                                       placeholder="Enter attorney name">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="defense_counsel_type" class="form-label">Counsel Type</label>
+                                <select class="form-select" id="defense_counsel_type" name="defense_counsel_type">
+                                    <option value="Public Defender">Public Defender</option>
+                                    <option value="Private Counsel">Private Counsel</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="appearance_reason" class="form-label">Appearance Reason</label>
+                                <select class="form-select" id="appearance_reason" name="appearance_reason">
+                                    <option value="arraignment">arraignment</option>
+                                    <option value="a change of plea">a change of plea</option>
+                                    <option value="sentencing">sentencing</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="defense_counsel_waived" name="defense_counsel_waived">
+                                    <label class="form-check-label" for="defense_counsel_waived">
+                                        <small>Defendant waived right to counsel</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charges Grid Section -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Charges Information</h6>
+                        <div>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="addCharge()">Add Charge</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="setAllPleas('Guilty')">Guilty All</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="setAllPleas('No Contest')">No Contest All</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered" id="charges-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 25%">Offense*</th>
+                                        <th style="width: 10%">Statute</th>
+                                        <th style="width: 8%">Degree</th>
+                                        <th style="width: 7%">Dismissed</th>
+                                        <th style="width: 7%">Allied</th>
+                                        <th style="width: 10%">Plea*</th>
+                                        <th style="width: 10%">Finding*</th>
+                                        <th style="width: 10%">Fines*</th>
+                                        <th style="width: 10%">Suspended</th>
+                                        <th style="width: 3%">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="charges-tbody">
+                                    <!-- Initial charge row -->
+                                    <tr id="charge-row-0">
+                                        <td><input type="text" name="offense_0" class="form-control form-control-sm" placeholder="Enter offense" required></td>
+                                        <td><input type="text" name="statute_0" class="form-control form-control-sm" placeholder="e.g., 4511.19"></td>
+                                        <td>
+                                            <select name="degree_0" class="form-select form-select-sm">
+                                                <option value="">Select degree</option>
+                                                <option value="F1">F1</option>
+                                                <option value="F2">F2</option>
+                                                <option value="F3">F3</option>
+                                                <option value="F4">F4</option>
+                                                <option value="F5">F5</option>
+                                                <option value="M1">M1</option>
+                                                <option value="M2">M2</option>
+                                                <option value="M3">M3</option>
+                                                <option value="M4">M4</option>
+                                                <option value="MM">MM</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="checkbox" name="dismissed_0" class="form-check-input"></td>
+                                        <td><input type="checkbox" name="allied_0" class="form-check-input"></td>
+                                        <td>
+                                            <select name="plea_0" class="form-select form-select-sm plea-select" required>
+                                                <option value="">Select plea</option>
+                                                <option value="Guilty">Guilty</option>
+                                                <option value="No Contest">No Contest</option>
+                                                <option value="Not Guilty">Not Guilty</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="finding_0" class="form-select form-select-sm finding-select" required>
+                                                <option value="">Select finding</option>
+                                                <option value="Guilty">Guilty</option>
+                                                <option value="Not Guilty">Not Guilty</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" step="0.01" name="fines_0" class="form-control form-control-sm fine-input" placeholder="0.00" onchange="calculateTotals()" required></td>
+                                        <td><input type="number" step="0.01" name="fines_suspended_0" class="form-control form-control-sm suspended-input" placeholder="0.00" onchange="calculateTotals()"></td>
+                                        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCharge(0)" disabled>Remove</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals Display -->
+                        <div class="row mt-2">
+                            <div class="col-md-4 offset-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Total Fines:</span>
+                                            <span id="total-fines">$0.00</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Total Suspended:</span>
+                                            <span id="total-suspended">$0.00</span>
+                                        </div>
+                                        <hr class="my-1">
+                                        <div class="d-flex justify-content-between fw-bold">
+                                            <span>Net Amount:</span>
+                                            <span id="net-amount">$0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Information Section -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Court Costs & Payment</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="court_costs" class="form-label">Court Costs:</label>
+                            <select class="form-select" id="court_costs" name="court_costs">
+                                <option value="Yes">Yes</option>
+                                <option value="Waived">Waived</option>
+                                <option value="Imposed in companion case">Imposed in companion case</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ability_to_pay" class="form-label">Time to pay:</label>
+                            <select class="form-select" id="ability_to_pay" name="ability_to_pay" onchange="togglePaymentFields()">
+                                <option value="forthwith">forthwith</option>
+                                <option value="monthly pay">monthly pay</option>
+                                <option value="partial forthwith then monthly pay">partial forthwith then monthly pay</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="due-date-field">
+                            <label for="balance_due_date" class="form-label">Due date:</label>
+                            <input type="date" class="form-control" id="balance_due_date" name="balance_due_date">
+                        </div>
+
+                        <div class="mb-3" id="pay-today-field" style="display: none;">
+                            <label for="pay_today" class="form-label">Pay Today:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="pay_today" name="pay_today" value="0.00">
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="monthly-pay-field" style="display: none;">
+                            <label for="monthly_pay" class="form-label">Monthly Pay:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="monthly_pay" name="monthly_pay" value="0.00">
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="credit_for_jail" name="credit_for_jail" onchange="toggleJailCredit()">
+                            <label class="form-check-label" for="credit_for_jail">
+                                Credit $50/day in jail
+                            </label>
+                        </div>
+
+                        <div class="mb-3" id="jail-credit-field" style="display: none;">
+                            <input type="number" class="form-control" id="jail_time_credit" name="jail_time_credit" placeholder="Days in jail" value="0">
+                        </div>
+
+                        <button type="button" class="btn btn-secondary btn-sm w-100" onclick="showCostsFines()">Show Costs/Fines</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FRA Information Section -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">FRA Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="distracted_driving" name="distracted_driving">
+                            <label class="form-check-label" for="distracted_driving">
+                                Add Distracted Driving Course Language
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fra_in_file" class="form-label">FRA shown in complaint:</label>
+                            <select class="form-select" id="fra_in_file" name="fra_in_file">
+                                <option value="N/A">N/A</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fra_in_court" class="form-label">FRA shown in court:</label>
+                            <select class="form-select" id="fra_in_court" name="fra_in_court">
+                                <option value="N/A">N/A</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Conditions Section -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Additional Conditions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="license_suspension" name="license_suspension">
+                            <label class="form-check-label" for="license_suspension">
+                                License Suspension
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="community_service" name="community_service">
+                            <label class="form-check-label" for="community_service">
+                                Community Service
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="other_conditions" name="other_conditions">
+                            <label class="form-check-label" for="other_conditions">
+                                Other
+                            </label>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-sm w-100" onclick="addConditionsDialog()">Add Conditions</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <input type="hidden" name="charge_count" id="charge_count" value="1">
+                        <button type="submit" class="btn btn-success btn-lg me-3">Create Entry</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-lg">Close Dialog</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let chargeCounter = 1;
+
+function addCharge() {
+    const tbody = document.getElementById('charges-tbody');
+    const newRow = document.createElement('tr');
+    newRow.id = `charge-row-${chargeCounter}`;
+    newRow.innerHTML = `
+        <td><input type="text" name="offense_${chargeCounter}" class="form-control form-control-sm" placeholder="Enter offense" required></td>
+        <td><input type="text" name="statute_${chargeCounter}" class="form-control form-control-sm" placeholder="e.g., 4511.19"></td>
+        <td>
+            <select name="degree_${chargeCounter}" class="form-select form-select-sm">
+                <option value="">Select degree</option>
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F3">F3</option>
+                <option value="F4">F4</option>
+                <option value="F5">F5</option>
+                <option value="M1">M1</option>
+                <option value="M2">M2</option>
+                <option value="M3">M3</option>
+                <option value="M4">M4</option>
+                <option value="MM">MM</option>
+            </select>
+        </td>
+        <td><input type="checkbox" name="dismissed_${chargeCounter}" class="form-check-input"></td>
+        <td><input type="checkbox" name="allied_${chargeCounter}" class="form-check-input"></td>
+        <td>
+            <select name="plea_${chargeCounter}" class="form-select form-select-sm plea-select" required>
+                <option value="">Select plea</option>
+                <option value="Guilty">Guilty</option>
+                <option value="No Contest">No Contest</option>
+                <option value="Not Guilty">Not Guilty</option>
+            </select>
+        </td>
+        <td>
+            <select name="finding_${chargeCounter}" class="form-select form-select-sm finding-select" required>
+                <option value="">Select finding</option>
+                <option value="Guilty">Guilty</option>
+                <option value="Not Guilty">Not Guilty</option>
+            </select>
+        </td>
+        <td><input type="number" step="0.01" name="fines_${chargeCounter}" class="form-control form-control-sm fine-input" placeholder="0.00" onchange="calculateTotals()" required></td>
+        <td><input type="number" step="0.01" name="fines_suspended_${chargeCounter}" class="form-control form-control-sm suspended-input" placeholder="0.00" onchange="calculateTotals()"></td>
+        <td><button type="button" class="btn btn-sm btn-danger" onclick="removeCharge(${chargeCounter})">Remove</button></td>
+    `;
+    tbody.appendChild(newRow);
+    chargeCounter++;
+    updateChargeCount();
+}
+
+function removeCharge(index) {
+    const row = document.getElementById(`charge-row-${index}`);
+    if (row) {
+        row.remove();
+        calculateTotals();
+        updateChargeCount();
+    }
+}
+
+function updateChargeCount() {
+    const rows = document.querySelectorAll('#charges-tbody tr');
+    document.getElementById('charge_count').value = rows.length;
+}
+
+function setAllPleas(pleaType) {
+    const pleaSelects = document.querySelectorAll('.plea-select');
+    const findingSelects = document.querySelectorAll('.finding-select');
+
+    pleaSelects.forEach(select => {
+        select.value = pleaType;
+    });
+
+    // Auto-set findings based on plea
+    if (pleaType === 'Guilty' || pleaType === 'No Contest') {
+        findingSelects.forEach(select => {
+            select.value = 'Guilty';
+        });
+    }
+}
+
+function calculateTotals() {
+    let totalFines = 0;
+    let totalSuspended = 0;
+
+    document.querySelectorAll('.fine-input').forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        totalFines += value;
+    });
+
+    document.querySelectorAll('.suspended-input').forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        totalSuspended += value;
+    });
+
+    const netAmount = totalFines - totalSuspended;
+
+    document.getElementById('total-fines').textContent = `$${totalFines.toFixed(2)}`;
+    document.getElementById('total-suspended').textContent = `$${totalSuspended.toFixed(2)}`;
+    document.getElementById('net-amount').textContent = `$${netAmount.toFixed(2)}`;
+}
+
+function togglePaymentFields() {
+    const abilityToPay = document.getElementById('ability_to_pay').value;
+    const payTodayField = document.getElementById('pay-today-field');
+    const monthlyPayField = document.getElementById('monthly-pay-field');
+    const dueDateField = document.getElementById('due-date-field');
+
+    if (abilityToPay === 'monthly pay') {
+        payTodayField.style.display = 'none';
+        monthlyPayField.style.display = 'block';
+        dueDateField.style.display = 'none';
+    } else if (abilityToPay === 'partial forthwith then monthly pay') {
+        payTodayField.style.display = 'block';
+        monthlyPayField.style.display = 'block';
+        dueDateField.style.display = 'none';
+    } else {
+        payTodayField.style.display = 'none';
+        monthlyPayField.style.display = 'none';
+        dueDateField.style.display = 'block';
+    }
+}
+
+function toggleJailCredit() {
+    const jailCreditField = document.getElementById('jail-credit-field');
+    const checkbox = document.getElementById('credit_for_jail');
+
+    if (checkbox.checked) {
+        jailCreditField.style.display = 'block';
+        document.getElementById('jail_time_credit').focus();
+    } else {
+        jailCreditField.style.display = 'none';
+        document.getElementById('jail_time_credit').value = '0';
+    }
+}
+
+function clearFields() {
+    if (confirm('Are you sure you want to clear all fields?')) {
+        document.getElementById('fine-only-form').reset();
+        // Reset charges table to single row
+        const tbody = document.getElementById('charges-tbody');
+        tbody.innerHTML = `
+            <tr id="charge-row-0">
+                <td><input type="text" name="offense_0" class="form-control form-control-sm" placeholder="Enter offense" required></td>
+                <td><input type="text" name="statute_0" class="form-control form-control-sm" placeholder="e.g., 4511.19"></td>
+                <td>
+                    <select name="degree_0" class="form-select form-select-sm">
+                        <option value="">Select degree</option>
+                        <option value="M1">M1</option>
+                        <option value="M2">M2</option>
+                        <option value="M3">M3</option>
+                        <option value="M4">M4</option>
+                        <option value="MM">MM</option>
+                    </select>
+                </td>
+                <td><input type="checkbox" name="dismissed_0" class="form-check-input"></td>
+                <td><input type="checkbox" name="allied_0" class="form-check-input"></td>
+                <td>
+                    <select name="plea_0" class="form-select form-select-sm plea-select" required>
+                        <option value="">Select plea</option>
+                        <option value="Guilty">Guilty</option>
+                        <option value="No Contest">No Contest</option>
+                        <option value="Not Guilty">Not Guilty</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="finding_0" class="form-select form-select-sm finding-select" required>
+                        <option value="">Select finding</option>
+                        <option value="Guilty">Guilty</option>
+                        <option value="Not Guilty">Not Guilty</option>
+                    </select>
+                </td>
+                <td><input type="number" step="0.01" name="fines_0" class="form-control form-control-sm fine-input" placeholder="0.00" onchange="calculateTotals()" required></td>
+                <td><input type="number" step="0.01" name="fines_suspended_0" class="form-control form-control-sm suspended-input" placeholder="0.00" onchange="calculateTotals()"></td>
+                <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCharge(0)" disabled>Remove</button></td>
+            </tr>
+        `;
+        chargeCounter = 1;
+        updateChargeCount();
+        calculateTotals();
+    }
+}
+
+function showCostsFines() {
+    alert('Costs/Fines calculator will be implemented next phase');
+}
+
+function addConditionsDialog() {
+    alert('Additional conditions dialog will be implemented next phase');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    togglePaymentFields();
+    calculateTotals();
+});
+</script>
+{% endblock %}
